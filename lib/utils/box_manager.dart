@@ -1,97 +1,132 @@
 import 'package:hive/hive.dart';
+import 'package:snack_swap/data/seedingdata.dart';
+import 'package:snack_swap/models/country.dart';
 import 'package:snack_swap/models/snack.dart';
+import 'package:snack_swap/models/trade.dart';
 import 'package:snack_swap/models/user.dart';
+import 'package:snack_swap/utils/auth_bloc.dart';
 
 class BoxManager {
   
-  Future<void> init() async{
-    await Hive.openBox("currentUser");
-    await Hive.openBox("snacks");
-    await Hive.openBox("users");
-  }
-
-  Box getSnacksBox() => Hive.box("snacks");
-  Box getUsersBox() => Hive.box("users");
-  Box getCurrentUserBox() => Hive.box("currentUser");
-
-  Future<User?> getCurrentUser() async {
-    final currentUserBox = getCurrentUserBox();
-    final String? username = currentUserBox.get('username');
-    if (username == null) return null;
+  static Future<void> init() async {
+    await Hive.openBox<Snack>("snacks");
+    await Hive.openBox<User>("users");
+    await Hive.openBox<Trade>("trades");
+    await Hive.openBox<Country>("countries");
     
-    return getUser(username);
-  }
-  
-  Future<User?> getUser(String username) async {
-    final usersBox = getUsersBox();
-    return usersBox.get(username);
+    await _seedDataIfNeeded();
   }
 
-  Future<List<Snack>> getUserSnacks(String username) async {
-    final User? user = await getUser(username);
-    if (user == null) return [];
-    return user.snacks;
-  }
-  
-  Future<List<Snack>> getCurrentUserSnacks() async {
-    final User? currentUser = await getCurrentUser();
-    if (currentUser == null) return [];
-    return currentUser.snacks;
-  }
-
-  Future<void> addSnack(Snack snack) async {
-    final snacksBox = getSnacksBox();
-    await snacksBox.put(snack.name, snack);
+  static Future<void> _seedDataIfNeeded() async {
+    final usersBox = Hive.box<User>("users");
+    final snacksBox = Hive.box<Snack>("snacks");
+    final countriesBox = Hive.box<Country>("countries");
     
-    final User? user = await getUser(snack.currentUser);
-    if (user != null) {
-      user.snacks.add(snack);
+    if (usersBox.isEmpty) {
+      for (var user in seedingUsers) {
+        await usersBox.add(user);
+      }
+    }
+    
+    if (snacksBox.isEmpty) {
+      for (var snack in snacks) {
+        await snacksBox.add(snack);
+      }
+    }
+    
+    if (countriesBox.isEmpty) {
+      for (var country in countries) {
+        await countriesBox.add(country);
+      }
+    }
+  }
+
+  static Future<void> login(String username, String password) async {
+    final usersBox = Hive.box<User>("users");
+    try {
+      final user = usersBox.values.firstWhere(
+        (user) => user.name == username && user.password == password
+      );
+      user.isLoggedIn = true;
       await user.save();
+      
+      AuthBloc().setCurrentUser(user);
+    } catch (e) {
+      throw Exception('Invalid username or password');
     }
   }
   
-  Future<void> removeSnack(String snackName, String username) async {
-    final User? user = await getUser(username);
-    if (user == null) return;
-    
-    user.snacks.removeWhere((snack) => snack.name == snackName);
-    await user.save();
+  static Future<void> logout() async {
+    final User? currentUser = AuthBloc().currentUserValue;
+    if (currentUser != null && currentUser.isLoggedIn) {
+      currentUser.isLoggedIn = false;
+      await currentUser.save();
+      AuthBloc().clearCurrentUser();
+    }
+  }
+
+  static Future<void> addSnack(Snack snack) async {
+    final snacksBox = Hive.box<Snack>("snacks");
+    await snacksBox.add(snack);
   }
   
-  Future<bool> tradeSnack(String snackName, String fromUsername, String toUsername) async {
-    final User? fromUser = await getUser(fromUsername);
-    final User? toUser = await getUser(toUsername);
-    
-    if (fromUser == null || toUser == null) return false;
-    
-    final snackIndex = fromUser.snacks.indexWhere((snack) => snack.name == snackName);
-    if (snackIndex == -1) return false;
-    
-    final Snack snack = fromUser.snacks[snackIndex];
-    final updatedSnack = Snack(
-      name: snack.name,
-      description: snack.description,
-      total: snack.total,
-      country: snack.country,
-      currentUser: toUsername,
-      countryImgUrl: snack.countryImgUrl,
-      imageImgUrl: snack.imageImgUrl
+  static List<Snack> getUserSnacks(String userId) {
+    final snacksBox = Hive.box<Snack>("snacks");
+    return snacksBox.values.where((snack) => snack.userID == userId).toList();
+  }
+  
+  static List<Snack> getAllSnacks() {
+    final snacksBox = Hive.box<Snack>("snacks");
+    return snacksBox.values.toList();
+  }
+
+  static Future<void> createTrade(User fromUser, Snack fromUserSnack, User toUser, Snack toUserSnack) async {
+    final tradesBox = Hive.box<Trade>("trades");
+    final trade = Trade(fromUser, fromUserSnack, toUser, toUserSnack, 'pending');
+    await tradesBox.add(trade);
+  }
+  
+  static List<Trade> getUserTrades(User user) {
+    final tradesBox = Hive.box<Trade>("trades");
+    return tradesBox.values.where((trade) => 
+      trade.fromUser.name == user.name || trade.toUser.name == user.name
+    ).toList();
+  }
+  
+  static List<Trade> getPendingTrades(User user) {
+    final tradesBox = Hive.box<Trade>("trades");
+    return tradesBox.values.where((trade) => 
+      trade.toUser.name == user.name && trade.status == 'pending'
+    ).toList();
+  }
+  
+  static Future<void> declineTrade(Trade trade) async {
+    final updatedTrade = Trade(
+      trade.fromUser,
+      trade.fromUserSnack,
+      trade.toUser,
+      trade.toUserSnack,
+      'declined'
     );
     
-    fromUser.snacks.removeAt(snackIndex);
-    toUser.snacks.add(updatedSnack);
-    
-    final snacksBox = getSnacksBox();
-    await snacksBox.put(updatedSnack.name, updatedSnack);
-    
-    await fromUser.save();
-    await toUser.save();
-    
-    return true;
+    final key = Hive.box<Trade>("trades").keyAt(
+      Hive.box<Trade>("trades").values.toList().indexOf(trade)
+    );
+    await Hive.box<Trade>("trades").put(key, updatedTrade);
   }
   
-  Future<List<Snack>> getAllAvailableSnacks() async {
-    final snacksBox = getSnacksBox();
-    return snacksBox.values.cast<Snack>().toList();
+  // Add country-related methods
+  static List<Country> getAllCountries() {
+    final countriesBox = Hive.box<Country>("countries");
+    return countriesBox.values.toList();
+  }
+  
+  static Country? getCountryByName(String name) {
+    final countriesBox = Hive.box<Country>("countries");
+    try {
+      return countriesBox.values.firstWhere((country) => country.name == name);
+    } catch (e) {
+      return null;
+    }
   }
 }

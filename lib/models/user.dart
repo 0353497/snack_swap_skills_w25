@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:hive/hive.dart';
 import 'package:snack_swap/models/snack.dart';
 
@@ -7,24 +9,30 @@ part 'user.g.dart';
 class User extends HiveObject {
 
   @HiveField(0)
-  final String name;
+  final String userID;
   @HiveField(1)
-  final String password;
+  final String name;
   @HiveField(2)
-  final String country;
+  final String password;
   @HiveField(3)
-  final String? countryImgUrl;
+  final String country;
   @HiveField(4)
-  final String? profileImg;
+  final String? countryImgUrl;
   @HiveField(5)
-  final List<Snack> snacks;
+  final String? profileImg;
+  @HiveField(6)
+  final List<Snack>? tradedSnacks;
+  @HiveField(7)
+  bool isLoggedIn;
 
   User({
+  required this.userID,
   required this.name,
   required this.password,
   required this.country,
   required this.countryImgUrl,
-  required this.snacks,
-  this.profileImg, 
+  this.isLoggedIn = false,
+  this.profileImg,
+  this.tradedSnacks
   });
 }

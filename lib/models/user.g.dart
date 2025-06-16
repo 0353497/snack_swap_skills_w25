@@ -8,7 +8,7 @@ part of 'user.dart';
 
 class UserAdapter extends TypeAdapter<User> {
   @override
-  final int typeId = 0;
+  final int typeId = 1;
 
   @override
   User read(BinaryReader reader) {
@@ -17,31 +17,37 @@ class UserAdapter extends TypeAdapter<User> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return User(
-      name: fields[0] as String,
-      password: fields[1] as String,
-      country: fields[2] as String,
-      countryImgUrl: fields[3] as String?,
-      snacks: (fields[5] as List).cast<Snack>(),
-      profileImg: fields[4] as String?,
+      userID: fields[0] as String,
+      name: fields[1] as String,
+      password: fields[2] as String,
+      country: fields[3] as String,
+      countryImgUrl: fields[4] as String?,
+      isLoggedIn: fields[7] as bool,
+      profileImg: fields[5] as String?,
+      tradedSnacks: (fields[6] as List?)?.cast<Snack>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, User obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.userID)
       ..writeByte(1)
-      ..write(obj.password)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.country)
+      ..write(obj.password)
       ..writeByte(3)
-      ..write(obj.countryImgUrl)
+      ..write(obj.country)
       ..writeByte(4)
-      ..write(obj.profileImg)
+      ..write(obj.countryImgUrl)
       ..writeByte(5)
-      ..write(obj.snacks);
+      ..write(obj.profileImg)
+      ..writeByte(6)
+      ..write(obj.tradedSnacks)
+      ..writeByte(7)
+      ..write(obj.isLoggedIn);
   }
 
   @override
