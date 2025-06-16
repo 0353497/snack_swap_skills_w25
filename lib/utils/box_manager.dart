@@ -79,6 +79,18 @@ class BoxManager {
     final snacksBox = Hive.box<Snack>("snacks");
     return snacksBox.values.toList();
   }
+  
+  
+  static List<Snack> getAllUniqueSnacks() {
+    final snacksBox = Hive.box<Snack>("snacks");
+    final uniqueSnacks = <String, Snack>{};
+    
+    for (var snack in snacksBox.values) {
+      uniqueSnacks[snack.name] = snack; 
+    }
+    
+    return uniqueSnacks.values.toList();
+  }
 
   static Future<void> createTrade(User fromUser, Snack fromUserSnack, User toUser, Snack toUserSnack) async {
     final tradesBox = Hive.box<Trade>("trades");
