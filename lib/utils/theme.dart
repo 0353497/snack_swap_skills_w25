@@ -19,12 +19,21 @@ class MainTheme {
         color: const Color(0xffFFF3E2),
         fontWeight: FontWeight.bold
       ),
-      displayMedium: GoogleFonts.fredoka(),
+      displayMedium: GoogleFonts.fredoka(
+        color: const Color(0xff222222),
+        fontWeight: FontWeight.w600
+      ),
       displaySmall: GoogleFonts.poppins(),
-      titleLarge: GoogleFonts.fredoka(),
+      titleLarge: GoogleFonts.fredoka(
+        color: const Color(0xff222222),
+        fontWeight: FontWeight.w600
+      ),
       titleMedium: GoogleFonts.poppins(),
       titleSmall: GoogleFonts.poppins(),
-      bodyLarge: GoogleFonts.poppins(),
+      bodyLarge: GoogleFonts.poppins(
+        color: const Color(0xffFFF3E2),
+        fontWeight: FontWeight.bold
+      ),
       bodyMedium: GoogleFonts.poppins(),
       bodySmall: GoogleFonts.poppins(),
       headlineLarge: GoogleFonts.fredoka(),
