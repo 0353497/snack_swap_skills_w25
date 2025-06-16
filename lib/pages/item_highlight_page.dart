@@ -49,7 +49,7 @@ class ItemHighlightPage extends StatelessWidget {
                         fontSize: 18
                       ),
                     ),
-                    OwnButton(text: "Let's swap")
+                    OwnButton(text: "Let's swap", onTap: (){},)
                   ],
                 ),
                 ),

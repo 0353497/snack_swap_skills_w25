@@ -49,7 +49,7 @@ class LetsSwap extends StatelessWidget {
                           height: 100,
                           child: Image.asset("assets/arrows/arrow_left.png"),
                         ),
-                        OwnButton(text: "Send request")
+                        OwnButton(text: "Send request",onTap: (){})
                       ],
                     ),
                   ),

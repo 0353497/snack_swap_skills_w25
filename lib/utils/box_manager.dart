@@ -74,6 +74,11 @@ class BoxManager {
     final snacksBox = Hive.box<Snack>("snacks");
     return snacksBox.values.where((snack) => snack.userID == userId).toList();
   }
+  static List<Snack> getCurrentUserSnacks() {
+    final String? currentUserID = AuthBloc().currentUserValue?.userID;
+    if (currentUserID == null) return <Snack>[];
+    return getUserSnacks(currentUserID);
+  }
   
   static List<Snack> getAllSnacks() {
     final snacksBox = Hive.box<Snack>("snacks");
@@ -125,12 +130,6 @@ class BoxManager {
       Hive.box<Trade>("trades").values.toList().indexOf(trade)
     );
     await Hive.box<Trade>("trades").put(key, updatedTrade);
-  }
-  
-  // Add country-related methods
-  static List<Country> getAllCountries() {
-    final countriesBox = Hive.box<Country>("countries");
-    return countriesBox.values.toList();
   }
   
   static Country? getCountryByName(String name) {
