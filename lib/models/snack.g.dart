@@ -24,13 +24,14 @@ class SnackAdapter extends TypeAdapter<Snack> {
       currentUser: fields[3] as String,
       countryImgUrl: fields[6] as String?,
       imageImgUrl: fields[5] as String?,
+      haveTraded: (fields[7] as List?)?.cast<User>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Snack obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class SnackAdapter extends TypeAdapter<Snack> {
       ..writeByte(5)
       ..write(obj.imageImgUrl)
       ..writeByte(6)
-      ..write(obj.countryImgUrl);
+      ..write(obj.countryImgUrl)
+      ..writeByte(7)
+      ..write(obj.haveTraded);
   }
 
   @override

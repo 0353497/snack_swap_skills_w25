@@ -3,7 +3,7 @@ import 'package:snack_swap/models/snack.dart';
 
 part 'user.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 1)
 class User extends HiveObject {
 
   @HiveField(0)

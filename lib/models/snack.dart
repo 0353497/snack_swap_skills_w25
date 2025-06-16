@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:snack_swap/models/user.dart';
 
 part 'snack.g.dart';
 
@@ -19,6 +20,8 @@ class Snack extends HiveObject {
   final String? imageImgUrl;
   @HiveField(6)
   final String? countryImgUrl;
+  @HiveField(7)
+  final List<User>? haveTraded;
 
   Snack({
   required this.name,
@@ -27,6 +30,7 @@ class Snack extends HiveObject {
   required this.country,
   required this.currentUser,
   this.countryImgUrl,
-  this.imageImgUrl
+  this.imageImgUrl,
+  this.haveTraded,
   });
 }
