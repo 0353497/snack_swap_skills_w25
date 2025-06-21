@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:snack_swap/components/own_button.dart';
 import 'package:snack_swap/utils/box_manager.dart';
@@ -100,9 +102,11 @@ class _LoginPageState extends State<LoginPage> {
                     try {
                       await BoxManager.login(name, password);
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(e.toString()))
                       );
+                      }
                     }
                   }
                   )

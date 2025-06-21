@@ -6,6 +6,8 @@ import 'package:snack_swap/models/snack.dart';
 import 'package:snack_swap/models/trade.dart';
 import 'package:snack_swap/models/user.dart';
 import 'package:snack_swap/utils/auth_bloc.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class BoxManager {
   
@@ -209,11 +211,9 @@ class BoxManager {
       final toUserSnack = snacksBox.get(toUserSnackKey);
       
       if (fromUserSnack != null && toUserSnack != null) {
-        // Update haveTraded lists
         List<String> updatedFromUserHaveTraded = List<String>.from(fromUserSnack.haveTraded ?? []);
         List<String> updatedToUserHaveTraded = List<String>.from(toUserSnack.haveTraded ?? []);
         
-        // Add the user IDs if they're not already in the list
         if (!updatedFromUserHaveTraded.contains(trade.toUser.userID)) {
           updatedFromUserHaveTraded.add(trade.toUser.userID);
         }
@@ -226,10 +226,10 @@ class BoxManager {
           name: fromUserSnack.name,
           description: fromUserSnack.description,
           country: fromUserSnack.country,
-          userID: trade.toUser.userID, // Swap the userID
+          userID: trade.toUser.userID,
           countryImgUrl: fromUserSnack.countryImgUrl,
           imageImgUrl: fromUserSnack.imageImgUrl,
-          haveTraded: updatedFromUserHaveTraded // Update haveTraded list
+          haveTraded: updatedFromUserHaveTraded
         );
         
         final newToUserSnack = Snack(
@@ -296,6 +296,30 @@ class BoxManager {
       return countriesBox.values.firstWhere((country) => country.name == name);
     } catch (e) {
       return null;
+    }
+  }
+  
+  static List<Country> getAllCountries() {
+    final countriesBox = Hive.box<Country>("countries");
+    return countriesBox.values.toList();
+  }
+  
+  static Future<String> saveImage(File imageFile) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final imagesDir = Directory('${appDir.path}/snack_images');
+      if (!await imagesDir.exists()) {
+        await imagesDir.create(recursive: true);
+      }
+
+      final fileName = 'snack_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final savedImagePath = '${imagesDir.path}/$fileName';
+      
+      await imageFile.copy(savedImagePath);
+      
+      return savedImagePath;
+    } catch (e) {
+      throw Exception('Failed to save image: $e');
     }
   }
   

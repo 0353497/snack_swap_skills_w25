@@ -3,6 +3,7 @@ import 'package:snack_swap/components/own_bottomsheet.dart';
 import 'package:snack_swap/components/own_button.dart';
 import 'package:snack_swap/components/rounded_sheet.dart';
 import 'package:snack_swap/components/snacks_bottom_sheet.dart';
+import 'package:snack_swap/pages/add_snack_page.dart';
 import 'package:snack_swap/pages/autgate.dart';
 import 'package:snack_swap/utils/auth_bloc.dart';
 import 'package:snack_swap/utils/box_manager.dart';
@@ -74,6 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         OwnButton(text: "Add snack",
                         onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => AddSnackPage()));
                         },
                         backgroundColor: Color(0xff5C2E1F),
                         ),
@@ -106,14 +108,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         OwnButton(text: "Sign out",
                         onTap: () async {
                           await BoxManager.logout();
-                          // Don't push a new page, just navigate back to root
-                          // where Autgate will handle showing login
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (context) => const Autgate(),
-                            ), 
-                            (route) => false
-                          );
+                          if (mounted) {
+                            // ignore: use_build_context_synchronously
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const Autgate(),
+                              ), 
+                              (route) => false
+                            );
+                          }
                         },
                         backgroundColor: Color(0xff5C2E1F),
                         
