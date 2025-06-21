@@ -58,10 +58,10 @@ class BoxManager {
   
   static Future<void> logout() async {
     final User? currentUser = AuthBloc().currentUserValue;
-    if (currentUser != null && currentUser.isLoggedIn) {
+    if (currentUser != null) {
       currentUser.isLoggedIn = false;
       await currentUser.save();
-      AuthBloc().clearCurrentUser();
+      AuthBloc().logout();
     }
   }
 

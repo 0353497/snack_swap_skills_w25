@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:snack_swap/components/own_button.dart';
 import 'package:snack_swap/components/rounded_sheet.dart';
+import 'package:snack_swap/models/snack.dart';
 
 class ItemHighlightPage extends StatelessWidget {
-  const ItemHighlightPage({super.key});
-
+  const ItemHighlightPage({super.key, required this.snack});
+  final Snack snack;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -12,6 +13,7 @@ class ItemHighlightPage extends StatelessWidget {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
       ),
       body: Column(
         children: [
@@ -20,7 +22,7 @@ class ItemHighlightPage extends StatelessWidget {
             color: Theme.of(context).canvasColor,
             height: MediaQuery.of(context).size.height * 0.5,
             width: double.maxFinite,
-            // child: Image.asset(""),
+            child: Image.asset(snack.imageImgUrl!),
           ),
           SizedBox(
             width: double.maxFinite,
@@ -32,19 +34,19 @@ class ItemHighlightPage extends StatelessWidget {
                   spacing: 30,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Pocky Sticks",
+                    Text(snack.name,
                     style: Theme.of(context).textTheme.displayMedium,
                     ),
                     Row(
                       spacing: 10,
                       children: [
-                        Image.asset("assets/vlags/vlag_japan.png",
+                        Image.asset(snack.countryImgUrl!,
                         width: 30,),
-                        Text("Japan")
+                        Text(snack.country)
                       ],
                     ),
                     Text(
-                      "dit is gewoon een test maar ik moet heel wat text hier neerzetten dus idj wtf ik aan het doen ben hallo wereld. dit is nog meer text.",
+                      snack.description,
                       style: TextStyle(
                         fontSize: 18
                       ),
