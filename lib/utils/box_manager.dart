@@ -112,12 +112,6 @@ class BoxManager {
     return uniqueSnacks.values.toList();
   }
 
-  static Future<void> createTrade(User fromUser, Snack fromUserSnack, User toUser, Snack toUserSnack) async {
-    final tradesBox = Hive.box<Trade>("trades");
-    final trade = Trade(fromUser, fromUserSnack, toUser, toUserSnack, 'pending');
-    await tradesBox.add(trade);
-  }
-  
   static List<Trade> getUserTrades(User user) {
     final tradesBox = Hive.box<Trade>("trades");
     return tradesBox.values.where((trade) => 
@@ -145,6 +139,52 @@ class BoxManager {
       Hive.box<Trade>("trades").values.toList().indexOf(trade)
     );
     await Hive.box<Trade>("trades").put(key, updatedTrade);
+  }
+  
+  static Future<void> acceptTrade(Trade trade) async {
+    final updatedTrade = Trade(
+      trade.fromUser,
+      trade.fromUserSnack,
+      trade.toUser,
+      trade.toUserSnack,
+      'accepted'
+    );
+    
+    final key = Hive.box<Trade>("trades").keyAt(
+      Hive.box<Trade>("trades").values.toList().indexOf(trade)
+    );
+    await Hive.box<Trade>("trades").put(key, updatedTrade);
+  }
+  
+  static Future<void> cancelTrade(Trade trade) async {
+    final key = Hive.box<Trade>("trades").keyAt(
+      Hive.box<Trade>("trades").values.toList().indexOf(trade)
+    );
+    await Hive.box<Trade>("trades").delete(key);
+  }
+  
+  static List<Trade> getAcceptedTrades(User user) {
+    final tradesBox = Hive.box<Trade>("trades");
+    return tradesBox.values.where((trade) => 
+      (trade.fromUser.name == user.name || trade.toUser.name == user.name) && 
+      trade.status == 'accepted'
+    ).toList();
+  }
+  
+  static List<Trade> getSentPendingTrades(User user) {
+    final tradesBox = Hive.box<Trade>("trades");
+    return tradesBox.values.where((trade) => 
+      trade.fromUser.name == user.name && trade.status == 'pending'
+    ).toList();
+  }
+  
+  static Future<void> createTrade(User toUser, Snack toUserSnack, Snack mySnack) async {
+    final User? currentUser = AuthBloc().currentUserValue;
+    if (currentUser == null) return;
+    
+    final tradesBox = Hive.box<Trade>("trades");
+    final trade = Trade(currentUser, mySnack, toUser, toUserSnack, 'pending');
+    await tradesBox.add(trade);
   }
   
   static Country? getCountryByName(String name) {

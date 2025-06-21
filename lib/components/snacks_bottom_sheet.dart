@@ -9,7 +9,8 @@ class SnacksBottomSheet {
     String title = "My Snacks",
     Color textColor = Colors.white,
     Color barColor = const Color(0xff5C2E1F),
-    Color tileColor = const Color(0xff2B3F52)
+    Color tileColor = const Color(0xff2B3F52),
+    Color barTitleColor = Colors.white
   }) {
     showModalBottomSheet(
       context: context,
@@ -38,7 +39,7 @@ class SnacksBottomSheet {
                     children: [
                       Text(
                         title, 
-                        style: Theme.of(context).textTheme.titleLarge!.copyWith(color: textColor),
+                        style: Theme.of(context).textTheme.titleLarge!.copyWith(color: barTitleColor),
                       ),
                       IconButton(
                         icon: Icon(Icons.close, color: textColor,),

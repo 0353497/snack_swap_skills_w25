@@ -37,9 +37,10 @@ class _LetsSwapState extends State<LetsSwap> {
           selectedUserSnack = snack;
         });
       },
-      barColor: Theme.of(context).colorScheme.secondary,
+      barColor: Theme.of(context).canvasColor,
+      barTitleColor: Colors.white,
       tileColor: Theme.of(context).colorScheme.primary,
-      textColor: Color(0xff2B3F52)
+      textColor: Color(0xff2B3F52),
     );
   }
 
@@ -51,14 +52,10 @@ class _LetsSwapState extends State<LetsSwap> {
       return;
     }
     
-    final currentUser = BoxManager.getUserWithSnack(selectedUserSnack!);
-    if (currentUser == null) return;
-    
     BoxManager.createTrade(
-      currentUser, 
-      selectedUserSnack!, 
       userWithWantedSnack!, 
-      widget.wantedSnack
+      widget.wantedSnack, 
+      selectedUserSnack!
     );
     
     ScaffoldMessenger.of(context).showSnackBar(
