@@ -151,7 +151,6 @@ class _AddSnackPageState extends State<AddSnackPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 16),
-                        // Name field
                         _buildFormLabel(context, 'Name'),
                         _buildTextField(
                           controller: nameController,
@@ -159,7 +158,6 @@ class _AddSnackPageState extends State<AddSnackPage> {
                         ),
                         const SizedBox(height: 24),
                         
-                        // Description field
                         _buildFormLabel(context, 'Description'),
                         _buildTextField(
                           controller: descriptionController,
@@ -168,13 +166,11 @@ class _AddSnackPageState extends State<AddSnackPage> {
                         ),
                         const SizedBox(height: 24),
                         
-                        // Image selection
                         _buildFormLabel(context, 'Image'),
                         const SizedBox(height: 8),
                         _buildImageSelector(),
                         const SizedBox(height: 32),
                         
-                        // Save button
                         OwnButton(
                           text: "Save Snack",
                           onTap: _saveSnack,

@@ -39,7 +39,6 @@ class _HomepageState extends State<Homepage> {
           snack.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           snack.country.toLowerCase().contains(_searchQuery.toLowerCase());
 
-        // Apply filter based on traded status
         bool matchesFilter = true;
         if (_currentFilter == FilterType.notTraded) {
           matchesFilter = !snack.hasCurrentUserTraded;
@@ -125,6 +124,8 @@ class _HomepageState extends State<Homepage> {
                   itemBuilder: (context, int i) {
                     if (i == 0) {
                       return SearchBar(
+                        elevation: WidgetStatePropertyAll(0),
+                        backgroundColor: WidgetStatePropertyAll(Colors.white),
                         hintText: "Search a snack...",
                         onChanged: (value) {
                           setState(() {
@@ -177,22 +178,47 @@ class SnackListTile extends StatelessWidget {
           spacing: 20,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: index != null ?
-                itemColors[index! % itemColors.length]
-                : Theme.of(context).colorScheme.secondary,
-                borderRadius: BorderRadius.circular(16)
-              ),
-              width: 100,
-              height: 100,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image(
-                  fit: BoxFit.contain,
-                  image: AssetImage(snack.imageImgUrl!),
+            Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: index != null ?
+                    itemColors[index! % itemColors.length]
+                    : Theme.of(context).colorScheme.secondary,
+                    borderRadius: BorderRadius.circular(16)
+                  ),
+                  width: 100,
+                  height: 100,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image(
+                      fit: BoxFit.contain,
+                      image: AssetImage(snack.imageImgUrl!),
+                    ),
+                  ),
                 ),
-              ),
+                if (snack.hasCurrentUserTraded)
+                Positioned(
+                  top: 67.5,
+                  left: 12.5,
+                  child: Container(
+                    width: 75,
+                    height: 25,
+                    decoration: BoxDecoration(
+                      color: Color(0xff4C6C82),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      "Traded",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold
+                      ),
+                      ),
+                  ),
+                )
+              ],
             ),
             Expanded(
               child: Column(

@@ -53,7 +53,6 @@ class _LetsSwapState extends State<LetsSwap> {
       return;
     }
     
-    // Check if the user still has the selected snack
     if (!BoxManager.userHasSnack(AuthBloc().currentUserValue!, selectedUserSnack!.name)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('You no longer have this snack to trade!'))
@@ -61,7 +60,6 @@ class _LetsSwapState extends State<LetsSwap> {
       return;
     }
     
-    // Check if the other user still has the wanted snack
     if (!BoxManager.userHasSnack(userWithWantedSnack!, widget.wantedSnack.name)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${userWithWantedSnack!.name} no longer has this snack available!'))
