@@ -239,7 +239,7 @@ class BoxManager {
           userID: trade.fromUser.userID,
           countryImgUrl: toUserSnack.countryImgUrl,
           imageImgUrl: toUserSnack.imageImgUrl,
-          haveTraded: updatedToUserHaveTraded // Update haveTraded list
+          haveTraded: updatedToUserHaveTraded
         );
         
         await snacksBox.delete(fromUserSnackKey);

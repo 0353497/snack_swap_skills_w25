@@ -94,10 +94,16 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                  OwnButton(
                   backgroundColor: Color(0xffFFA87C),
-                  text: "Submit", onTap: (){
+                  text: "Submit", onTap: () async {
                     final String name = nameController.value.text.trim();
                     final String password = passwordController.value.text.trim();
-                    BoxManager.login(name, password);
+                    try {
+                      await BoxManager.login(name, password);
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString()))
+                      );
+                    }
                   }
                   )
                 ],
