@@ -49,6 +49,7 @@ final List<Snack> snacks = [
     userID: "1",
     countryImgUrl: "assets/vlags/vlag_netherlands.png",
     imageImgUrl: "assets/snacks/stroopwafel.png",
+    haveTraded: ["1", "2"]
   ),
   Snack(
     name: "pretzel",
@@ -73,6 +74,7 @@ final List<Snack> snacks = [
     userID: "2",
     countryImgUrl: "assets/vlags/vlag_duitsland.png",
     imageImgUrl: "assets/snacks/pretzel.png",
+    haveTraded: ["2"]
   ),
   Snack(
     name: "Pocky",
