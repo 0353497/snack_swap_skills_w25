@@ -82,19 +82,28 @@ class _SwapsPageState extends State<SwapsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${otherUser.name} accepted your offer!',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${userSnack.name} traded for ${otherSnack.name}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                    ),
-                  ),
+                  RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: Colors.black, fontSize: 16),
+                          children: [
+                            TextSpan(
+                              text: otherUser.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const TextSpan(text: ' accepted you offer of '),
+                            TextSpan(
+                              text: trade.toUserSnack.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const TextSpan(text: ' traded for '),
+                            TextSpan(
+                              text: trade.fromUserSnack.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                 
                 ],
               ),
             ),
@@ -252,7 +261,7 @@ class _SwapsPageState extends State<SwapsPage> {
                           foregroundColor: WidgetStatePropertyAll(Colors.white),
                           backgroundColor: WidgetStatePropertyAll(Color(0xff4C6C82))
                         ),
-                        child: Text("cancel", style: TextStyle(fontWeight: FontWeight.bold),),
+                        child: Text("cancel request", style: TextStyle(fontWeight: FontWeight.bold),),
                         onPressed: () => _cancelTrade(trade),
                       ),
                     ],

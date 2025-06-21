@@ -2,13 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:snack_swap/components/own_button.dart';
 import 'package:snack_swap/components/rounded_sheet.dart';
 import 'package:snack_swap/models/snack.dart';
+import 'package:snack_swap/models/user.dart';
 import 'package:snack_swap/pages/lets_swap.dart';
+import 'package:snack_swap/utils/auth_bloc.dart';
+import 'package:snack_swap/utils/box_manager.dart';
 
 class ItemHighlightPage extends StatelessWidget {
   const ItemHighlightPage({super.key, required this.snack});
   final Snack snack;
+  
+  bool _isSnackTradable() {
+    User? currentUser = AuthBloc().currentUserValue;
+    if (currentUser == null) return false;
+    
+    if (snack.userID == currentUser.userID) return false;
+    
+    User? ownerUser = BoxManager.getUserWithSnack(snack);
+    return ownerUser != null;
+  }
+  
   @override
   Widget build(BuildContext context) {
+    final bool canTrade = _isSnackTradable();
+    
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -52,10 +68,23 @@ class ItemHighlightPage extends StatelessWidget {
                         fontSize: 18
                       ),
                     ),
-                    OwnButton(
-                      text: "Let's swap",
-                      onTap: () =>
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => LetsSwap(wantedSnack: snack))),
+                    if (canTrade)
+                      OwnButton(
+                        text: "Let's swap",
+                        onTap: () =>
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => LetsSwap(wantedSnack: snack))),
+                      )
+                    else
+                      Opacity(
+                        opacity: 0.5,
+                        child: OwnButton(
+                          text: "Can't swap this item",
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("You can't trade with yourself!"))
+                            );
+                          },
+                        ),
                       )
                   ],
                 ),
