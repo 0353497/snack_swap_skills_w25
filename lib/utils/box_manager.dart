@@ -209,6 +209,19 @@ class BoxManager {
       final toUserSnack = snacksBox.get(toUserSnackKey);
       
       if (fromUserSnack != null && toUserSnack != null) {
+        // Update haveTraded lists
+        List<String> updatedFromUserHaveTraded = List<String>.from(fromUserSnack.haveTraded ?? []);
+        List<String> updatedToUserHaveTraded = List<String>.from(toUserSnack.haveTraded ?? []);
+        
+        // Add the user IDs if they're not already in the list
+        if (!updatedFromUserHaveTraded.contains(trade.toUser.userID)) {
+          updatedFromUserHaveTraded.add(trade.toUser.userID);
+        }
+        
+        if (!updatedToUserHaveTraded.contains(trade.fromUser.userID)) {
+          updatedToUserHaveTraded.add(trade.fromUser.userID);
+        }
+        
         final newFromUserSnack = Snack(
           name: fromUserSnack.name,
           description: fromUserSnack.description,
@@ -216,7 +229,7 @@ class BoxManager {
           userID: trade.toUser.userID, // Swap the userID
           countryImgUrl: fromUserSnack.countryImgUrl,
           imageImgUrl: fromUserSnack.imageImgUrl,
-          haveTraded: fromUserSnack.haveTraded
+          haveTraded: updatedFromUserHaveTraded // Update haveTraded list
         );
         
         final newToUserSnack = Snack(
@@ -226,7 +239,7 @@ class BoxManager {
           userID: trade.fromUser.userID,
           countryImgUrl: toUserSnack.countryImgUrl,
           imageImgUrl: toUserSnack.imageImgUrl,
-          haveTraded: toUserSnack.haveTraded
+          haveTraded: updatedToUserHaveTraded // Update haveTraded list
         );
         
         await snacksBox.delete(fromUserSnackKey);
