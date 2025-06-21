@@ -23,7 +23,7 @@ class SnackAdapter extends TypeAdapter<Snack> {
       userID: fields[2] as String,
       countryImgUrl: fields[5] as String?,
       imageImgUrl: fields[4] as String?,
-      haveTraded: (fields[6] as List?)?.cast<User>(),
+      haveTraded: (fields[6] as List?)?.cast<String>(),
     );
   }
 

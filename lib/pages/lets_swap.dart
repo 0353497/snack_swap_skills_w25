@@ -1,10 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:snack_swap/components/own_button.dart';
 import 'package:snack_swap/components/rounded_sheet.dart';
+import 'package:snack_swap/components/snacks_bottom_sheet.dart';
 import 'package:snack_swap/components/swap_input.dart';
+import 'package:snack_swap/models/snack.dart';
+import 'package:snack_swap/models/user.dart';
+import 'package:snack_swap/utils/box_manager.dart';
 
-class LetsSwap extends StatelessWidget {
-  const LetsSwap({super.key});
+class LetsSwap extends StatefulWidget {
+  const LetsSwap({super.key, required this.wantedSnack});
+  final Snack wantedSnack;
+
+  @override
+  State<LetsSwap> createState() => _LetsSwapState();
+}
+
+class _LetsSwapState extends State<LetsSwap> {
+  late final User? userWithWantedSnack;
+  Snack? selectedUserSnack;
+
+  @override
+  void initState() {
+    super.initState();
+    userWithWantedSnack = BoxManager.getUserWithSnack(widget.wantedSnack);
+  }
+  
+  void _showUserSnackSelection() {
+    final userSnacks = BoxManager.getCurrentUserSnacks();
+    
+    SnacksBottomSheet.show(
+      context: context,
+      snacks: userSnacks,
+      title: "Select Your Snack",
+      onSnackTap: (snack) {
+        setState(() {
+          selectedUserSnack = snack;
+        });
+      },
+      barColor: Theme.of(context).colorScheme.secondary,
+      tileColor: Theme.of(context).colorScheme.primary,
+      textColor: Color(0xff2B3F52)
+    );
+  }
+
+  void _sendTradeRequest() {
+    if (selectedUserSnack == null || userWithWantedSnack == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select a snack to trade'))
+      );
+      return;
+    }
+    
+    final currentUser = BoxManager.getUserWithSnack(selectedUserSnack!);
+    if (currentUser == null) return;
+    
+    BoxManager.createTrade(
+      currentUser, 
+      selectedUserSnack!, 
+      userWithWantedSnack!, 
+      widget.wantedSnack
+    );
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Trade request sent!'))
+    );
+    
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +87,7 @@ class LetsSwap extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("Swap with Yui",
+                  Text("Swap with ${userWithWantedSnack!.name}",
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   Expanded(
@@ -39,9 +101,12 @@ class LetsSwap extends StatelessWidget {
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: const [
-                            SwapInput(),
-                            SwapInput(),
+                          children: [
+                            SwapInput(highligtedSnack: widget.wantedSnack),
+                            GestureDetector(
+                              onTap: _showUserSnackSelection,
+                              child: SwapInput(highligtedSnack: selectedUserSnack),
+                            ),
                           ],
                         ),
                         SizedBox(
@@ -49,7 +114,10 @@ class LetsSwap extends StatelessWidget {
                           height: 100,
                           child: Image.asset("assets/arrows/arrow_left.png"),
                         ),
-                        OwnButton(text: "Send request",onTap: (){})
+                        OwnButton(
+                          text: "Send request",
+                          onTap: _sendTradeRequest
+                        )
                       ],
                     ),
                   ),

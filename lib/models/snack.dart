@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:snack_swap/models/user.dart';
+import 'package:snack_swap/utils/auth_bloc.dart';
 
 part 'snack.g.dart';
 
@@ -17,8 +17,10 @@ class Snack extends HiveObject {
   final String? imageImgUrl;
   @HiveField(5)
   final String? countryImgUrl;
+
+  //list of userIDS
   @HiveField(6)
-  final List<User>? haveTraded;
+  final List<String>? haveTraded;
 
   Snack({
   required this.name,
@@ -29,4 +31,6 @@ class Snack extends HiveObject {
   this.imageImgUrl,
   this.haveTraded,
   });
+
+  bool get hasCurrentUserTraded => (AuthBloc().currentUserValue != null && haveTraded != null) ? haveTraded!.contains(AuthBloc().currentUserValue!.userID) : false;
 }

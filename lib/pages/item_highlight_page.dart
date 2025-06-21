@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:snack_swap/components/own_button.dart';
 import 'package:snack_swap/components/rounded_sheet.dart';
 import 'package:snack_swap/models/snack.dart';
+import 'package:snack_swap/pages/lets_swap.dart';
 
 class ItemHighlightPage extends StatelessWidget {
   const ItemHighlightPage({super.key, required this.snack});
@@ -51,7 +52,11 @@ class ItemHighlightPage extends StatelessWidget {
                         fontSize: 18
                       ),
                     ),
-                    OwnButton(text: "Let's swap", onTap: (){},)
+                    OwnButton(
+                      text: "Let's swap",
+                      onTap: () =>
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => LetsSwap(wantedSnack: snack))),
+                      )
                   ],
                 ),
                 ),

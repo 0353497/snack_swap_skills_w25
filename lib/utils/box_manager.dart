@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:snack_swap/data/seedingdata.dart';
 import 'package:snack_swap/models/country.dart';
@@ -15,6 +16,20 @@ class BoxManager {
     await Hive.openBox<Country>("countries");
     
     await _seedDataIfNeeded();
+    await _tryAutoLogin();
+  }
+
+  static Future<void> _tryAutoLogin() async {
+    final usersBox = Hive.box<User>("users");
+    try {
+      final loggedInUser = usersBox.values.firstWhere(
+        (user) => user.isLoggedIn == true
+      );
+      
+      AuthBloc().setCurrentUser(loggedInUser);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   static Future<void> _seedDataIfNeeded() async {
@@ -136,6 +151,17 @@ class BoxManager {
     final countriesBox = Hive.box<Country>("countries");
     try {
       return countriesBox.values.firstWhere((country) => country.name == name);
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  static User? getUserWithSnack(Snack snack) {
+    final usersBox = Hive.box<User>("users");
+    try {
+      return usersBox.values.firstWhere(
+        (user) => user.userID == snack.userID && user.userID != AuthBloc().currentUserValue?.userID,
+      );
     } catch (e) {
       return null;
     }

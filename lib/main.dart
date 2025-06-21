@@ -5,7 +5,6 @@ import 'package:snack_swap/models/snack.dart';
 import 'package:snack_swap/models/trade.dart';
 import 'package:snack_swap/models/user.dart';
 import 'package:snack_swap/pages/autgate.dart';
-import 'package:snack_swap/pages/homepage.dart';
 import 'package:snack_swap/utils/box_manager.dart';
 import 'package:snack_swap/utils/theme.dart';
 

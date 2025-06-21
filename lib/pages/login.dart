@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:snack_swap/components/own_button.dart';
-import 'package:snack_swap/utils/auth_bloc.dart';
 import 'package:snack_swap/utils/box_manager.dart';
 
 class LoginPage extends StatefulWidget {
