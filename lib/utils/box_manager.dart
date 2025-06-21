@@ -26,8 +26,10 @@ class BoxManager {
         (user) => user.isLoggedIn == true
       );
       
-      AuthBloc().setCurrentUser(loggedInUser);
+      final authBloc = AuthBloc();
+      authBloc.setCurrentUser(loggedInUser);
     } catch (e) {
+      AuthBloc().logout();
       debugPrint(e.toString());
     }
   }
@@ -65,18 +67,20 @@ class BoxManager {
       user.isLoggedIn = true;
       await user.save();
       
-      AuthBloc().setCurrentUser(user);
+      final authBloc = AuthBloc();
+      authBloc.setCurrentUser(user);
     } catch (e) {
       throw Exception('Invalid username or password');
     }
   }
   
   static Future<void> logout() async {
-    final User? currentUser = AuthBloc().currentUserValue;
+    final authBloc = AuthBloc();
+    final User? currentUser = authBloc.currentUserValue;
     if (currentUser != null) {
       currentUser.isLoggedIn = false;
       await currentUser.save();
-      AuthBloc().logout();
+      authBloc.logout();
     }
   }
 
@@ -90,7 +94,8 @@ class BoxManager {
     return snacksBox.values.where((snack) => snack.userID == userId).toList();
   }
   static List<Snack> getCurrentUserSnacks() {
-    final String? currentUserID = AuthBloc().currentUserValue?.userID;
+    final authBloc = AuthBloc();
+    final String? currentUserID = authBloc.currentUserValue?.userID;
     if (currentUserID == null) return <Snack>[];
     return getUserSnacks(currentUserID);
   }
@@ -110,6 +115,31 @@ class BoxManager {
     }
     
     return uniqueSnacks.values.toList();
+  }
+  
+  static bool userHasSnack(User user, String snackName) {
+    final snacksBox = Hive.box<Snack>("snacks");
+    try {
+      snacksBox.values.firstWhere(
+        (snack) => snack.userID == user.userID && snack.name == snackName
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  static Future<void> cancelPendingTradesForSnack(User user, String snackName) async {
+    final tradesBox = Hive.box<Trade>("trades");
+    final pendingTrades = tradesBox.values.where((trade) => 
+      trade.status == 'pending' && 
+      trade.fromUser.userID == user.userID && 
+      trade.fromUserSnack.name == snackName
+    ).toList();
+    
+    for (var trade in pendingTrades) {
+      await cancelTrade(trade);
+    }
   }
 
   static List<Trade> getUserTrades(User user) {
@@ -142,6 +172,14 @@ class BoxManager {
   }
   
   static Future<void> acceptTrade(Trade trade) async {
+    bool fromUserHasSnack = userHasSnack(trade.fromUser, trade.fromUserSnack.name);
+    bool toUserHasSnack = userHasSnack(trade.toUser, trade.toUserSnack.name);
+    
+    if (!fromUserHasSnack || !toUserHasSnack) {
+      await cancelTrade(trade);
+      return;
+    }
+    
     final updatedTrade = Trade(
       trade.fromUser,
       trade.fromUserSnack,
@@ -154,6 +192,53 @@ class BoxManager {
       Hive.box<Trade>("trades").values.toList().indexOf(trade)
     );
     await Hive.box<Trade>("trades").put(key, updatedTrade);
+    
+    final snacksBox = Hive.box<Snack>("snacks");
+    final fromUserSnackIndex = snacksBox.values.toList().indexWhere(
+      (snack) => snack.userID == trade.fromUser.userID && snack.name == trade.fromUserSnack.name
+    );
+    final toUserSnackIndex = snacksBox.values.toList().indexWhere(
+      (snack) => snack.userID == trade.toUser.userID && snack.name == trade.toUserSnack.name
+    );
+    
+    if (fromUserSnackIndex != -1 && toUserSnackIndex != -1) {
+      final fromUserSnackKey = snacksBox.keyAt(fromUserSnackIndex);
+      final toUserSnackKey = snacksBox.keyAt(toUserSnackIndex);
+      
+      final fromUserSnack = snacksBox.get(fromUserSnackKey);
+      final toUserSnack = snacksBox.get(toUserSnackKey);
+      
+      if (fromUserSnack != null && toUserSnack != null) {
+        final newFromUserSnack = Snack(
+          name: fromUserSnack.name,
+          description: fromUserSnack.description,
+          country: fromUserSnack.country,
+          userID: trade.toUser.userID, // Swap the userID
+          countryImgUrl: fromUserSnack.countryImgUrl,
+          imageImgUrl: fromUserSnack.imageImgUrl,
+          haveTraded: fromUserSnack.haveTraded
+        );
+        
+        final newToUserSnack = Snack(
+          name: toUserSnack.name,
+          description: toUserSnack.description,
+          country: toUserSnack.country,
+          userID: trade.fromUser.userID,
+          countryImgUrl: toUserSnack.countryImgUrl,
+          imageImgUrl: toUserSnack.imageImgUrl,
+          haveTraded: toUserSnack.haveTraded
+        );
+        
+        await snacksBox.delete(fromUserSnackKey);
+        await snacksBox.delete(toUserSnackKey);
+        
+        await snacksBox.add(newFromUserSnack);
+        await snacksBox.add(newToUserSnack);
+        
+        await cancelPendingTradesForSnack(trade.fromUser, trade.fromUserSnack.name);
+        await cancelPendingTradesForSnack(trade.toUser, trade.toUserSnack.name);
+      }
+    }
   }
   
   static Future<void> cancelTrade(Trade trade) async {
@@ -179,8 +264,13 @@ class BoxManager {
   }
   
   static Future<void> createTrade(User toUser, Snack toUserSnack, Snack mySnack) async {
-    final User? currentUser = AuthBloc().currentUserValue;
+    final authBloc = AuthBloc();
+    final User? currentUser = authBloc.currentUserValue;
     if (currentUser == null) return;
+    
+    if (!userHasSnack(currentUser, mySnack.name)) {
+      return;
+    }
     
     final tradesBox = Hive.box<Trade>("trades");
     final trade = Trade(currentUser, mySnack, toUser, toUserSnack, 'pending');
@@ -198,9 +288,10 @@ class BoxManager {
   
   static User? getUserWithSnack(Snack snack) {
     final usersBox = Hive.box<User>("users");
+    final authBloc = AuthBloc();
     try {
       return usersBox.values.firstWhere(
-        (user) => user.userID == snack.userID && user.userID != AuthBloc().currentUserValue?.userID,
+        (user) => user.userID == snack.userID && user.userID != authBloc.currentUserValue?.userID,
       );
     } catch (e) {
       return null;

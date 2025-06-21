@@ -5,6 +5,7 @@ import 'package:snack_swap/components/snacks_bottom_sheet.dart';
 import 'package:snack_swap/components/swap_input.dart';
 import 'package:snack_swap/models/snack.dart';
 import 'package:snack_swap/models/user.dart';
+import 'package:snack_swap/utils/auth_bloc.dart';
 import 'package:snack_swap/utils/box_manager.dart';
 
 class LetsSwap extends StatefulWidget {
@@ -48,6 +49,22 @@ class _LetsSwapState extends State<LetsSwap> {
     if (selectedUserSnack == null || userWithWantedSnack == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please select a snack to trade'))
+      );
+      return;
+    }
+    
+    // Check if the user still has the selected snack
+    if (!BoxManager.userHasSnack(AuthBloc().currentUserValue!, selectedUserSnack!.name)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('You no longer have this snack to trade!'))
+      );
+      return;
+    }
+    
+    // Check if the other user still has the wanted snack
+    if (!BoxManager.userHasSnack(userWithWantedSnack!, widget.wantedSnack.name)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${userWithWantedSnack!.name} no longer has this snack available!'))
       );
       return;
     }

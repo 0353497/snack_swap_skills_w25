@@ -65,7 +65,7 @@ class _SwapsPageState extends State<SwapsPage> {
     final otherSnack = isUserReceiver ? trade.fromUserSnack : trade.toUserSnack;
     
     return Card(
-      color: Colors.green[100],
+      color: Theme.of(context).colorScheme.primary,
       elevation: 2,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
@@ -73,7 +73,8 @@ class _SwapsPageState extends State<SwapsPage> {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage('assets/snacks/${otherSnack.imageImgUrl}'),
+              backgroundImage: AssetImage(otherSnack.imageImgUrl ?? ""),
+              backgroundColor: Theme.of(context).cardColor,
               radius: 24,
             ),
             const SizedBox(width: 16),
@@ -124,7 +125,7 @@ class _SwapsPageState extends State<SwapsPage> {
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage('assets/snacks/${trade.fromUserSnack.imageImgUrl}'),
+                  backgroundImage: AssetImage(trade.fromUserSnack.imageImgUrl!),
                   radius: 24,
                 ),
                 const SizedBox(width: 16),
@@ -132,34 +133,56 @@ class _SwapsPageState extends State<SwapsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${trade.fromUser.name} wants your ${trade.toUserSnack.name}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: Colors.black),
+                          children: [
+                            TextSpan(
+                              text: trade.fromUser.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const TextSpan(text: ' wants your '),
+                            TextSpan(
+                              text: trade.toUserSnack.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const TextSpan(text: ' in trade for their '),
+                            TextSpan(
+                              text: trade.fromUserSnack.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        'In trade for their ${trade.fromUserSnack.name}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                        ),
+                       Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                               style: ButtonStyle(
+                                foregroundColor: WidgetStatePropertyAll(Colors.white),
+                                backgroundColor: WidgetStatePropertyAll(Color(0xff4C6C82))
+                              ),
+                              onPressed: () => _acceptTrade(trade),
+                              child: Text("accept", style: TextStyle(fontWeight: FontWeight.bold),),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                               style: ButtonStyle(
+                                foregroundColor: WidgetStatePropertyAll(Colors.white),
+                                backgroundColor: WidgetStatePropertyAll(Color(0xff4C6C82))
+                              ),
+                              onPressed: () => _declineTrade(trade),
+                              child: Text("decline", style: TextStyle(fontWeight: FontWeight.bold),),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.check, color: Colors.green),
-                      onPressed: () => _acceptTrade(trade),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () => _declineTrade(trade),
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -265,37 +288,45 @@ class _SwapsPageState extends State<SwapsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (acceptedTrades.isNotEmpty) ...[
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                      ),
                         Padding(
                           padding: const EdgeInsets.only(left: 16, bottom: 8),
                           child: Text(
-                            'Recent Success!',
+                            'Your requests',
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ),
                         _buildRecentAcceptedTradeCard(),
-                        const SizedBox(height: 16),
+                      if (acceptedTrades.isEmpty) ...[
+                        const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text('No accepted requests'),
+                        ),
                       ],
-                      
+                        const SizedBox(height: 16),
+              
                       Padding(
                         padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
                         child: Text(
-                          'Your Requests',
+                          'New requests',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                      _buildTradeRequestsList(),
+              
+                      const SizedBox(height: 16),
+              
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+                        child: Text(
+                          'Pending Requests',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
                       _buildOutgoingRequestsList(),
                       
-                      const SizedBox(height: 16),
-                      
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-                        child: Text(
-                          'Incoming Requests',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                      ),
-                      _buildTradeRequestsList(),
                     ],
                   ),
                 ),

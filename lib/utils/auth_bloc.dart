@@ -36,7 +36,7 @@ class AuthBloc {
     final currentUser = users.where((user) => user.name == name && user.password == password).firstOrNull;
     if (currentUser == null) return false;
     currentUser.isLoggedIn = true;
-    AuthBloc().setCurrentUser(currentUser);
+    setCurrentUser(currentUser);
     return true;
   }
 }

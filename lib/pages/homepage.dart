@@ -5,70 +5,153 @@ import 'package:snack_swap/models/snack.dart';
 import 'package:snack_swap/pages/item_highlight_page.dart';
 import 'package:snack_swap/utils/box_manager.dart';
 
-class Homepage extends StatelessWidget {
+enum FilterType {
+  all,
+  notTraded,
+  traded
+}
+
+class Homepage extends StatefulWidget {
   const Homepage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Snack> snacks = BoxManager.getAllUniqueSnacks();
+  State<Homepage> createState() => _HomepageState();
+}
 
+class _HomepageState extends State<Homepage> {
+  FilterType _currentFilter = FilterType.all;
+  String _searchQuery = "";
+  List<Snack> snacks = [];
+  List<Snack> filteredSnacks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    snacks = BoxManager.getAllUniqueSnacks();
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    setState(() {
+      filteredSnacks = snacks.where((snack) {
+        bool matchesSearch = _searchQuery.isEmpty || 
+          snack.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          snack.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          snack.country.toLowerCase().contains(_searchQuery.toLowerCase());
+
+        // Apply filter based on traded status
+        bool matchesFilter = true;
+        if (_currentFilter == FilterType.notTraded) {
+          matchesFilter = !snack.hasCurrentUserTraded;
+        } else if (_currentFilter == FilterType.traded) {
+          matchesFilter = snack.hasCurrentUserTraded;
+        }
+        
+        return matchesSearch && matchesFilter;
+      }).toList();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
     extendBody: true,
      body: SafeArea(
        child: Column(
         children: [
           Padding(
-            padding: EdgeInsetsGeometry.all(24),
+            padding: const EdgeInsets.all(24),
             child: Column(
-              spacing: 16,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("Snacks",
                 textAlign: TextAlign.start,
                 style: Theme.of(context).textTheme.displayLarge),
+                const SizedBox(height: 16),
                 Row(
-                  spacing: 16,
                   children: [
-                    FilledButton(onPressed: (){}, child: Text("all")),
-                    FilledButton(onPressed: null, child: Text("Not traded yet")),
-                    FilledButton(onPressed: null, child: Text("Traded")),
+                    FilledButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentFilter = FilterType.all;
+                          _applyFilters();
+                        });
+                      }, 
+                      style: _currentFilter == FilterType.all ? null : FilledButton.styleFrom(
+                        backgroundColor: Colors.grey[300],
+                        foregroundColor: Colors.black54,
+                      ),
+                      child: const Text("All")
+                    ),
+                    const SizedBox(width: 16),
+                    FilledButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentFilter = FilterType.notTraded;
+                          _applyFilters();
+                        });
+                      }, 
+                      style: _currentFilter == FilterType.notTraded ? null : FilledButton.styleFrom(
+                        backgroundColor: Colors.grey[300],
+                        foregroundColor: Colors.black54,
+                      ),
+                      child: const Text("Not traded yet")
+                    ),
+                    const SizedBox(width: 16),
+                    FilledButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentFilter = FilterType.traded;
+                          _applyFilters();
+                        });
+                      }, 
+                      style: _currentFilter == FilterType.traded ? null : FilledButton.styleFrom(
+                        backgroundColor: Colors.grey[300],
+                        foregroundColor: Colors.black54,
+                      ),
+                      child: const Text("Traded")
+                    ),
                   ],
                 )
               ],
             ),
           ),
-          RoundedSheet(
-            child: Padding(
-              padding: EdgeInsetsGeometry.all(8),
-              child: Expanded(
+          Expanded(
+            child: RoundedSheet(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
                 child: ListView.builder(
-                  itemCount: snacks.length + 1,
+                  itemCount: filteredSnacks.length + 1,
                   itemBuilder: (context, int i) {
                     if (i == 0) {
-                      return  SearchBar(
+                      return SearchBar(
                         hintText: "Search a snack...",
                         onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                            _applyFilters();
+                          });
                         },
                       );
                     }
-                    final Snack snack = snacks[i -1];
-                     if (snack.imageImgUrl == null) {
-                         return ListTile(
-                          title: Text(snack.name),
-                          subtitle: Text(snack.description),
-                        );
-                      } else {
+                    final Snack snack = filteredSnacks[i - 1];
+                    if (snack.imageImgUrl == null) {
+                      return ListTile(
+                        title: Text(snack.name),
+                        subtitle: Text(snack.description),
+                      );
+                    } else {
                       return SnackListTile(snack: snack, index: i);
-                      }
                     }
-                  ),
+                  }
+                ),
               ),
-              ),
+            ),
           )
         ],
        ),
      ),
-      bottomNavigationBar: OwnBottomSheet(currentIndex: 0,),
+      bottomNavigationBar: const OwnBottomSheet(currentIndex: 0,),
     );
   }
 }

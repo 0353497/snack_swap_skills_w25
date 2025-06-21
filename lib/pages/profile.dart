@@ -3,6 +3,7 @@ import 'package:snack_swap/components/own_bottomsheet.dart';
 import 'package:snack_swap/components/own_button.dart';
 import 'package:snack_swap/components/rounded_sheet.dart';
 import 'package:snack_swap/components/snacks_bottom_sheet.dart';
+import 'package:snack_swap/pages/login.dart';
 import 'package:snack_swap/utils/auth_bloc.dart';
 import 'package:snack_swap/utils/box_manager.dart';
 
@@ -94,7 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   fontSize: 24
                                 ),
                               ),
-                              Text("6",
+                              Text(BoxManager.getAcceptedTrades(AuthBloc().currentUserValue!).length.toString(),
                                style: Theme.of(context).textTheme.displayLarge?.copyWith(
                                   fontSize: 36
                                 ),
@@ -103,7 +104,10 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         OwnButton(text: "Sign out",
-                        onTap: () => BoxManager.logout(),
+                        onTap: () {
+                          BoxManager.logout();
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => LoginPage()));
+                        } ,
                         backgroundColor: Color(0xff5C2E1F),
                         
                         )
